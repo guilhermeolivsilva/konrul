@@ -1,44 +1,73 @@
 ############################ Image #############################
 
 FROM ubuntu:22.04
-ENV TZ="Europe/London"
+ENV TZ="Europe/Berlin"
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime
 RUN echo $TZ > /etc/timezone && rm -rf /var/lib/apt/lists/*
-
-
 
 ############################ General dependencies ############################
 
 RUN apt update -y
-RUN apt install -y wget python3 python3-pip python3-dev tar git python3-venv clang
+RUN apt install -y wget \
+                   python3 \
+                   python3-pip \
+                   python3-dev \
+                   tar \
+                   git \
+                   python3-venv \
+                   clang
+
 RUN wget https://github.com/Kitware/CMake/releases/download/v3.27.7/cmake-3.27.7-linux-x86_64.tar.gz && \
     tar -zxvf cmake-3.27.7-linux-x86_64.tar.gz -C /opt && \
     ln -s /opt/cmake-3.27.7-linux-x86_64/bin/* /usr/local/bin/ && \
     rm cmake-3.27.7-linux-x86_64.tar.gz
 
-RUN apt install -y ninja-build bison flex libtool jq lld libgmp3-dev build-essential libboost-system-dev libboost-thread-dev libboost-program-options-dev libboost-test-dev libboost-all-dev default-jdk maven git-lfs
+RUN apt install -y ninja-build \
+                   bison \
+                   flex \
+                   libtool \
+                   jq \
+                   lld \
+                   libgmp3-dev \
+                   build-essential \
+                   libboost-system-dev \
+                   libboost-thread-dev \
+                   libboost-program-options-dev \
+                   libboost-test-dev \
+                   libboost-all-dev \
+                   default-jdk \
+                   maven
 
 ############################ Clone KONRUL ############################
-RUN git clone https://github.com/JWesleySM/konrul
+RUN git clone https://github.com/guilhermeolivsilva/konrul
 WORKDIR /konrul
 
 RUN python3 -m venv .venv/venv
 ENV PATH="/konrul/.venv/venv/bin:$PATH"
 
 ############################ Setup CBMC verification ############################
-RUN pip install numpy==1.26.4 pybind11 toml pyparsing pymlir torch sentencepiece fairseq==0.12.2  clang==14 libclang==14.0.6
+RUN pip install numpy==1.26.4 \
+                "pybind11<3" \
+                toml \
+                pyparsing \
+                pymlir \
+                torch \
+                sentencepiece \
+                fairseq==0.12.2 \
+                clang==14 \
+                libclang==14.0.6 \
+                openai==2.44.0
 
 RUN git config --global user.email "builder@example.com" && \
     git config --global user.name "Docker Builder"
 
-RUN cd verification && ./build_tools/build_dependencies.sh && \
-    ./build_tools/build_mlirSynth.sh && \
+RUN cd verification && ./build_tools/build_dependencies.sh 
+
+RUN cd verification && ./build_tools/build_mlirSynth.sh && \
     python -m pip install --upgrade pip && \
     python -m pip install -r deps/llvm-project/mlir/python/requirements.txt && \
-    python -m pip install jax==0.4.25 jaxlib==0.4.25
-
-############################ Get KONRUL model ############################
-RUN git lfs install && git clone https://huggingface.co/jwesleysm/konrul-guesser /konrul/konrul-guesser
+    python -m pip install jax==0.4.25 \
+                          jaxlib==0.4.25
 
 ############################ Clone TACO ############################
 RUN git clone https://github.com/tensor-compiler/taco && \

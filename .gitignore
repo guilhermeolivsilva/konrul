@@ -9,5 +9,5 @@ benchmarks/*/*.bc
 benchmarks/*/candidate*
 /llvm/
 /taco/
-konrul-guesser/
 *.jscop
+.env

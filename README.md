@@ -4,7 +4,7 @@ KONRUL is a code lifter that correctly lifts existing tensor algebra C code to e
 the basis of tensor contraction DSLs. 
 
 KONRUL is based on the _Guess, Measure & Edit_ framework [Magalhães et. al. PACT'25]. It uses a Transformer model to guess a solution, compiler lowering to infer a specification for the guess, program
-similarity metrics to measure the difference between the specifications and guide a search of edit rules, and finally testing and model checking to verify the solution. KONRUL's guesser model is also availabe on [HuggingFace](https://huggingface.co/jwesleysm/konrul-guesser ).
+similarity metrics to measure the difference between the specifications and guide a search of edit rules, and finally testing and model checking to verify the solution.
 
 Full details of KONRUL are available in the reference paper. 
 
@@ -25,14 +25,20 @@ Currently, KONRUL is provided as a [Docker](https://www.docker.com/) artifact. Y
 
 _Important_: Depending on privilegies, you might have to run Docker as sudo or have your user added to a group that can run Docker without root access.
 
-```
-$ docker build -t konrul-docker -f docker/Dockerfile .
+```bash
+docker build -t konrul-docker -f Dockerfile .
 ```
 
-Once the image is built, that can be executed with the command:
+Set up your `.env` file based on the `.env.example`:
 
 ```
-$ docker run -ti -v /root/konrul konrul-docker
+SCADS_API_KEY=...
+```
+
+Once the image is built and the environment file is ready, start a container with
+
+```bash
+docker run -ti -v /root/konrul konrul-docker --env-file .env
 ```
 
 This will run KONRUL Docker image and leave you inside a container with all KONRUL completely configured. Notice that, by default, KONRUL Dockerfile downloads LLVM for x86. This can be changed in case you want to run it on other architectures.
@@ -41,13 +47,13 @@ This will run KONRUL Docker image and leave you inside a container with all KONR
 
 KONRUL takes as input the original program in C, the set of tests (I/O samples), the MLIR version of the input program, and the number of attempts to run the whole lifting pipeline.
 
-```
-$ python3 main.py <path-to-c-program> <path-to-IO-samples> <path-to-mlir-program> <number-of-pipeline-iterations>
+```bash
+python3 main.py <path-to-c-program> <path-to-IO-samples> <path-to-mlir-program> <number-of-pipeline-iterations>
 ```
 
 ## Example
 
-Let's consider as example the DSP [matmul](https://github.com/JWesleySM/konrul/blob/main/benchmarks/dsp/matmul.c) benchmark:
+Let's consider as example the DSP [matmul](https://github.com/guilhermeolivsilva/konrul/blob/main/benchmarks/dsp/matmul.c) benchmark:
 
 ```c
 void matmul(int* matA, int* matB, int* matC, int m, int n, int p)
@@ -66,7 +72,7 @@ void matmul(int* matA, int* matB, int* matC, int m, int n, int p)
 To run KONRUL with 3 attempts, simply do:
 
 ```
-$ python3 main.py benchmarks/dsp/matmul.c benchmarks/dsp/matmul_io.json benchamrks/dsp/matmul.mlir 3
+python3 main.py benchmarks/dsp/matmul.c benchmarks/dsp/matmul_io.json benchmarks/dsp/matmul.mlir 3
 ```
 
 When successful, KONRUL outputs the lifted program in Einsum notation, PyTorch and some lifting statistics:
@@ -96,7 +102,6 @@ If you use KONRUL, please refer the reference paper:
   year         = {2025},
 }
 ```
-
 
 ## Notes
   - We provide some benchmarks that are evaluated in the paper, but not all. We're checking licensing matters and will release the full benchmark suite soon
