@@ -52,19 +52,20 @@ def _pytorch_constant_codegen(constant_value):
   return f'cons = torch.tensor([{constant_value}])\n  '
 
 
-def _einsum_indexing_codegen(indexing_expr):
-  return indexing_expr.replace(',','') if indexing_expr else 'i'
-  
+def _einsum_indexing_codegen(indexing_expr, default=''):
+  return indexing_expr.replace(',', '') if indexing_expr else default
+
 
 def _pytorch_einsum_codegen(lhs_tensor, einsum_tensors):
-  einsum_exp = '\'' + _einsum_indexing_codegen(einsum_tensors[0].indexing)
+  einsum_exp = '\'' + _einsum_indexing_codegen(einsum_tensors[0].indexing, 'i')
   einsum_args = '[-' if einsum_tensors[0].negated else '['
   einsum_args += einsum_tensors[0].name
   for t in einsum_tensors[1:]:
-    einsum_exp += ',' + _einsum_indexing_codegen(t.indexing)
+    einsum_exp += ',' + _einsum_indexing_codegen(t.indexing, 'i')
     t_name = '-' + t.name if t.negated else t.name
     einsum_args += ', ' + t_name
-  
+
+  # Scalar output: empty subscript, e.g. 'ij->'
   einsum_exp += '->' + _einsum_indexing_codegen(lhs_tensor.indexing) + '\''
   return einsum_exp, einsum_args
 

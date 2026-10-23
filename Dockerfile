@@ -26,16 +26,18 @@ RUN python3 -m venv .venv/venv
 ENV PATH="/konrul/.venv/venv/bin:$PATH"
 
 ############################ Setup CBMC verification ############################
-RUN pip install numpy==1.26.4 pybind11 toml pyparsing pymlir torch sentencepiece fairseq==0.12.2  clang==14 libclang==14.0.6
+RUN pip install numpy==1.26.4 "pybind11<3" toml pyparsing pymlir torch sentencepiece fairseq==0.12.2  clang==14 libclang==14.0.6
 
 RUN git config --global user.email "builder@example.com" && \
     git config --global user.name "Docker Builder"
 
-RUN cd verification && ./build_tools/build_dependencies.sh && \
-    ./build_tools/build_mlirSynth.sh && \
+RUN cd verification && ./build_tools/build_dependencies.sh
+
+RUN cd verification && ./build_tools/build_mlirSynth.sh && \
     python -m pip install --upgrade pip && \
     python -m pip install -r deps/llvm-project/mlir/python/requirements.txt && \
-    python -m pip install jax==0.4.25 jaxlib==0.4.25
+    python -m pip install jax==0.4.25 jaxlib==0.4.25 && \
+    python -m pip install "numpy==1.26.4"
 
 ############################ Get KONRUL model ############################
 RUN git lfs install && git clone https://huggingface.co/jwesleysm/konrul-guesser /konrul/konrul-guesser
