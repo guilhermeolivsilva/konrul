@@ -76,7 +76,7 @@ class Checker():
   
       if tok.endswith(','):
         tok = tok.rstrip(',')
-      
+      breakpoint()
       offset, var_idx = tok.split('i')
       if offset.isnumeric():
         if int(offset) > max_offset:
